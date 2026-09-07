@@ -40,10 +40,17 @@ npm run deploy     # build, then wrangler pages deploy dist --project-name melod
   `air`, `fingering`, `voicing` (smooth | root), `line` ({kind:'prog'|'melody', items}), `idx`, `chord`.
 - **Keyboard SVG `buildKeys()`:** string template → `innerHTML`. Livery (blue body, red rail, key bed, the
   `badge()` logotype, chrome mouthpiece ring, tube), then 22 whites, then 15 blacks;
-  The **badge** ("m-37C Plus ≡ⓈSUZUKI≡") is hand-drawn vector lettering on a 300×72 canvas (baseline y=54,
-  italic via `skewX(-12)`), scaled 0.5 and rotated −90° into a recessed panel beside the keys, so it reads
-  bottom-to-top in Flat view and upright in Held view, matching the owner's photo. No font is involved; edit the
-  path data in `badge()` to refine letterforms. each key is `<g class="key" role="button"
+  The **badge** ("m-37C Plus ≡ⓈSUZUKI≡") is a **vector trace of the real badge**: `tools/badge_crop.png` (the
+  owner's photo crop, 383×49 px) → `tools/trace_badge.py` (whiteness score, unsharp mask, 6× upscale, Otsu + offset,
+  marching squares, Douglas-Peucker; the oblique crop is mapped onto the panel's true 3.66:1 aspect) →
+  `tools/badge_paths.json` (20 contours, ~530 points, IoU 0.95 against the mask) → `tools/build_badge.py` embeds it
+  as `const BADGE` + `badge()` in index.html. Parameters used: `--sharpen 0.8 --level 0.08` (without them the tiny
+  counters of the "s" in Plus and the "S" in SUZUKI fill in at this resolution). The panel is 150 units long beside
+  the keys, rotated −90° so it reads bottom-to-top in Flat view and upright in Held view, as on the instrument.
+  To re-trace from a sharper photo (a straight-on 1500 px crop would improve the small letters further): save the
+  crop, run `python tools/trace_badge.py <crop> --out tools --sharpen 0.8 --level 0.08` then
+  `python tools/build_badge.py`. No font is involved. Cap depths are `G.capL=86`, `G.capR=60` (≈51 mm and 35 mm of
+  the 110 mm body depth, from the product photo). each key is `<g class="key" role="button"
   tabindex="0" data-midi>` with the face rect and overlays: register dim, next-chord dashed ring, chord-tone emerald
   ring, root/blue rings, the dot (label = note name or degree), fingering badge. `highlightFor(midi)` decides what a
   key shows this render. **Held view** = the flat drawing wrapped in `translate(H 0) rotate(90)` (low F at the top,
