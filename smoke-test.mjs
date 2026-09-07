@@ -72,6 +72,18 @@ setTimeout(() => {
   ok('C major blues shows the blue-note ring and spells Eb', svg().includes('#60a5fa') && svg().includes('>Eb<') && !svg().includes('>D#<'));
   $('scale').value = 'major'; $('scale').dispatchEvent(evt('change'));
 
+  // double harmonic major: 22 keys, b2/b6 spelled flat, its own chords, idiomatic roman numerals + random pool
+  $('scale').value = 'double_harmonic'; $('scale').dispatchEvent(evt('change'));
+  ok('C double harmonic lights 22 keys', dots() === 22, 'dots=' + dots());
+  ok('double harmonic spells Db and Ab (never C#/G#)', svg().includes('>Db<') && svg().includes('>Ab<') && !svg().includes('>C#<') && !svg().includes('>G#<'));
+  const dh = [...$('diatonic').querySelectorAll('.chip')].map(c => c.textContent.trim().split(/\s+/)[0]);
+  ok('double harmonic chords are C Db Em Fm G Abaug Bdim', dh.join(' ') === 'C Db Em Fm G Abaug Bdim', dh.join(' '));
+  $('progin').value = 'I bII V I'; $('setprog').dispatchEvent(evt('click'));
+  ok('I bII V I resolves to C Db G C', [...$('prog').querySelectorAll('.pchip')].map(b => b.textContent).join(' ') === 'C Db G C', [...$('prog').querySelectorAll('.pchip')].map(b => b.textContent).join(' '));
+  $('randprog').dispatchEvent(evt('click'));
+  ok('random uses the desert pool with bII in its name', /bII/.test($('progname').textContent), $('progname').textContent);
+  $('scale').value = 'major'; $('scale').dispatchEvent(evt('change')); $('clearprog').dispatchEvent(evt('click'));
+
   // held view
   $('view').querySelectorAll('button')[2].dispatchEvent(evt('click'));
   ok('held view rotates the board', /data-view="held"/.test(svg()) && /rotate\(90\)/.test(svg()) && $('svgwrap').dataset.view === 'held');

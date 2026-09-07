@@ -198,6 +198,7 @@
         <option value="minor_pentatonic">Minor pentatonic</option>
         <option value="major_blues">Major blues</option>
         <option value="minor_blues">Minor blues</option>
+        <option value="double_harmonic">Double harmonic major</option>
       </select>
     </div>
     <div class="grp"><label>Register</label>
@@ -360,6 +361,11 @@ const SCALES={
   minor_pentatonic:{iv:[0,3,5,7,10],deg:['1','b3','4','5','b7'], parent:'natural_minor', title:'Minor Pentatonic'},
   major_blues:{iv:[0,2,3,4,7,9], deg:['1','2','b3','3','5','6'], parent:'major', title:'Major Blues', blue:3},
   minor_blues:{iv:[0,3,5,6,7,10], deg:['1','b3','4','b5','5','b7'], parent:'natural_minor', title:'Minor Blues', blue:6},
+  /* Double harmonic major (Byzantine / "Arabic" / Hijaz-Kar): 1 b2 3 4 5 b6 7. The b2 and b6 always spell flat.
+     Its own triads by degree; V and vii° use the customary natural 5th/3rd (D in C) rather than the odd stacked-third chords. */
+  double_harmonic:{iv:[0,1,4,5,7,8,11], deg:['1','b2','3','4','5','b6','7'], parent:'major', title:'Double Harmonic Major', flat:[1,5],
+    qual:['','','m','m','','aug','dim'], roman:['I','bII','iii','iv','V','bVI+','vii°'],
+    progs:[[0,1,0,1],[0,1,4,0],[3,0,1,0],[0,4,1,0],[0,3,1,0],[0,1,3,4,0]]},
 };
 const DIA={ major:['','m','m','','','m','dim'], natural_minor:['m','dim','','m','m','','' ] };
 const ROMAN={ major:['I','ii','iii','IV','V','vi','vii°'], natural_minor:['i','ii°','III','iv','v','VI','VII'] };
@@ -369,14 +375,20 @@ const mod=(a,m=12)=>((a%m)+m)%m;
 const scalePCs=(r,st)=>SCALES[st].iv.map(i=>mod(r+i));
 function usesFlats(r,st){ const rel=SCALES[st].parent==='major'?r:mod(r+3); return FLATSET.has(rel); }
 function noteName(pc,flats){ return (flats?FLAT:NOTES)[pc]; }
+/* pitch classes a scale forces to flat spelling regardless of key: blue notes, and e.g. the b2/b6 of double harmonic */
+function forcedFlats(r,st){ const sc=SCALES[st], s=new Set(); if(sc.blue!=null) s.add(mod(r+sc.blue)); (sc.flat||[]).forEach(i=>s.add(mod(r+sc.iv[i]))); return s; }
+function spell(pc,r,st){ return noteName(pc, usesFlats(r,st)||forcedFlats(r,st).has(pc)); }
 function degLabel(r,st,pc){ const i=SCALES[st].iv.indexOf(mod(pc-r)); return i<0?'':SCALES[st].deg[i]; }
 function freq(m){return 440*Math.pow(2,(m-69)/12);}
 const octOf=m=>Math.floor(m/12)-1;
 const fullName=(m,flats)=>noteName(mod(m),flats)+octOf(m);
 function diatonic(r,st){
-  const par=SCALES[st].parent, pivs=par==='major'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10], q=DIA[par], rm=ROMAN[par], fl=usesFlats(r,st);
+  const sc=SCALES[st];
+  if(sc.qual){ return sc.iv.map((iv,i)=>{const rp=mod(r+iv); return {sym:spell(rp,r,st)+sc.qual[i], rootPC:rp, qual:sc.qual[i], roman:sc.roman[i]};}); }
+  const par=sc.parent, pivs=par==='major'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10], q=DIA[par], rm=ROMAN[par], fl=usesFlats(r,st);
   return pivs.map((iv,i)=>{const rp=mod(r+iv); return {sym:noteName(rp,fl)+q[i], rootPC:rp, qual:q[i], roman:rm[i]};});
 }
+function romanFor(st){ return SCALES[st].roman||ROMAN[SCALES[st].parent]; }
 function chordTones(rp,q){return (CHORD_IV[q]||CHORD_IV['']).map(i=>mod(rp+i));}
 function parseChord(tok){
   tok=(tok||'').trim(); if(!tok) return null;
@@ -436,7 +448,7 @@ function viewIsHeld(){ if(S.view==='held') return true; if(S.view==='flat') retu
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 /* highlight model: what each key shows this render */
 function highlightFor(midi){
-  const pc=mod(midi), flats=usesFlats(S.root,S.scale), set=scalePCs(S.root,S.scale);
+  const pc=mod(midi), flats=usesFlats(S.root,S.scale)||forcedFlats(S.root,S.scale).has(pc), set=scalePCs(S.root,S.scale);
   const bluePC=SCALES[S.scale].blue!=null?mod(S.root+SCALES[S.scale].blue):-1;
   const win=REGISTERS[S.register]; const inWin=!win||(midi>=win.lo&&midi<=win.hi);
   const cur=currentVoicing(); const inChord=cur&&cur.midis.includes(midi); const nxt=nextVoicing(); const inNext=nxt&&nxt.midis.includes(midi)&&!inChord;
@@ -503,7 +515,7 @@ function buildKeys(anim){
   /* keys: whites first, then blacks; overlays inside each key group */
   const order=LAY.keys.filter(k=>!k.black).concat(LAY.keys.filter(k=>k.black));
   order.forEach((k,idx)=>{
-    const r=keyRect(k,g), h=highlightFor(k.m), cx=r.x+r.w/2;
+    const r=keyRect(k,g), h=highlightFor(k.m), cx=r.x+r.w/2, flats=h.flats;
     const dotY = k.black ? r.y+r.h-22 : r.y+r.h-30, dotR = k.black?10:13, fs = k.black?10:12;
     const labY = k.black ? r.y+r.h-6 : r.y+r.h-7;
     const showLab = S.labels==='all' || (S.labels==='landmarks' && !k.black && (h.pc===0||h.pc===5));
@@ -599,10 +611,14 @@ function parseLine(text){
   }
   const items=[], bad=[];
   toks.forEach(t=>{
-    if(isRoman(t)){ const m=t.match(ROMAN_RX); const num=m[2].toLowerCase(); const deg=['i','ii','iii','iv','v','vi','vii'].indexOf(num); const d=dia[deg]; const upper=m[2]===m[2].toUpperCase();
-      let q=d.qual; if(m[3]){ q=m[3]==='°'||m[3]==='o'||m[3]==='dim'?'dim':m[3]==='+'||m[3]==='aug'?'aug':m[3]; } else if(!/dim/.test(q)) { q=upper?'':'m'; }
-      let rp=d.rootPC; if(m[1]==='b') rp=mod(rp-1); if(m[1]==='#') rp=mod(rp+1);
-      items.push({sym:noteName(rp,flats)+q, rootPC:rp, qual:q, roman:t}); return; }
+    if(isRoman(t)){ const m=t.match(ROMAN_RX); const num=m[2].toLowerCase(); const deg=['i','ii','iii','iv','v','vi','vii'].indexOf(num); const upper=m[2]===m[2].toUpperCase();
+      /* roots come from the parent major/minor degrees so "bII" is always the flat second, even in scales whose own II is flat */
+      const pivs=par==='major'?[0,2,4,5,7,9,11]:[0,2,3,5,7,8,10]; let rp=mod(S.root+pivs[deg]); if(m[1]==='b') rp=mod(rp-1); if(m[1]==='#') rp=mod(rp+1);
+      const d=dia[deg]; let q;
+      if(m[3]){ q=m[3]==='°'||m[3]==='o'||m[3]==='dim'?'dim':m[3]==='+'||m[3]==='aug'?'aug':m[3]; }
+      else if(d.rootPC===rp&&(d.qual==='dim'||d.qual==='aug')) q=d.qual;
+      else q=upper?'':'m';
+      items.push({sym:spell(rp,S.root,S.scale)+q, rootPC:rp, qual:q, roman:t}); return; }
     const p=parseChord(t); if(p) items.push(p); else bad.push(t);
   });
   return {kind:'prog', items, bad};
@@ -726,7 +742,7 @@ function renderBoard(anim){
   const win=REGISTERS[S.register];
   $('bsub').textContent=(win?('Register '+fullName(win.lo,flats)+'–'+fullName(win.hi,flats)):'Full range · F3–F6')+(S.mode==='chords'?' · Chords':S.mode==='drill'?' · Drill':'');
   const bn=$('bnow'); let now=''; const INV=[' · root',' · 1st inv',' · 2nd inv',' · 3rd inv'];
-  if(S.mode==='chords'&&S.chord&&S.chord.voicing){ const v=S.chord.voicing; now=S.chord.sym+' · '+chordTones(S.chord.rootPC,S.chord.qual).map(pc=>noteName(pc,flats)).join(' ')+INV[v.inv]; }
+  if(S.mode==='chords'&&S.chord&&S.chord.voicing){ const v=S.chord.voicing; now=S.chord.sym+' · '+chordTones(S.chord.rootPC,S.chord.qual).map(pc=>spell(pc,S.root,S.scale)).join(' ')+INV[v.inv]; }
   else if(S.mode==='explore'&&S.line.kind==='prog'&&S.idx>=0&&S.line.items[S.idx]){ const it=S.line.items[S.idx]; now='▶ '+it.sym+(it.voicing?INV[it.voicing.inv]:''); }
   else if(S.mode==='explore'&&S.line.kind==='melody'&&S.idx>=0&&S.line.items[S.idx]){ const it=S.line.items[S.idx]; now='▶ '+(it.rest?'rest':it.sym); }
   bn.textContent=now; if(now){ bn.classList.remove('flash'); void bn.offsetWidth; bn.classList.add('flash'); }
@@ -759,13 +775,13 @@ const MAJ_PROG=[[0,4,5,3],[0,5,3,4],[0,3,4],[0,3,4,0],[5,3,0,4],[0,5,1,4],[1,4,0
 const MIN_PROG=[[0,5,2,6],[0,6,5,6],[0,3,4],[0,3,4,0],[0,5,6],[0,3,6,2],[0,2,5,6],[0,6,5,4],[0,3,5,6],[1,4,0],[0,5,2,6,0]];
 const BLUES_12BAR=[0,0,0,0,3,3,0,0,4,3,0,4];
 function randomizeProg(){
-  const par=SCALES[S.scale].parent, dia=diatonic(S.root,S.scale);
-  let pool=par==='major'?MAJ_PROG:MIN_PROG;
-  if(SCALES[S.scale].blue!=null) pool=pool.concat([BLUES_12BAR,BLUES_12BAR,BLUES_12BAR,BLUES_12BAR]);
+  const sc=SCALES[S.scale], par=sc.parent, dia=diatonic(S.root,S.scale), rm=romanFor(S.scale);
+  let pool=sc.progs||(par==='major'?MAJ_PROG:MIN_PROG);
+  if(sc.blue!=null) pool=pool.concat([BLUES_12BAR,BLUES_12BAR,BLUES_12BAR,BLUES_12BAR]);
   let pat=pool[Math.floor(Math.random()*pool.length)];
   if(window.__lastPat && pool.length>1){ let g=0; while(pat.join()===window.__lastPat && g++<6) pat=pool[Math.floor(Math.random()*pool.length)]; }
   window.__lastPat=pat.join();
-  S.line={kind:'prog', items:pat.map(i=>({sym:dia[i].sym,rootPC:dia[i].rootPC,qual:dia[i].qual})), name:pat.join()===BLUES_12BAR.join()?'12-bar blues':pat.map(i=>ROMAN[par][i]).join('  –  ')};
+  S.line={kind:'prog', items:pat.map(i=>({sym:dia[i].sym,rootPC:dia[i].rootPC,qual:dia[i].qual})), name:pat.join()===BLUES_12BAR.join()?'12-bar blues':pat.map(i=>rm[i]).join('  –  ')};
   S.idx=-1; stopProg(); resolveLine();
   $('progin').value=S.line.items.map(i=>i.sym).join(' ');
   $('progname').textContent='Pattern:  '+S.line.name; $('progmsg').textContent='';
@@ -835,7 +851,7 @@ function drillPool(type){
   if(want('chord')){ dia.forEach(c=>out.push({key:'chord:'+c.sym,type:'chord',chord:c}));
     const sev=par==='major'?[[4,'7'],[1,'m7'],[0,'maj7']]:[[4,'7'],[0,'m7'],[2,'maj7']];
     sev.forEach(([d,q])=>{ const c=dia[d]; out.push({key:'chord:'+noteName(c.rootPC,flats)+q,type:'chord',chord:{sym:noteName(c.rootPC,flats)+q,rootPC:c.rootPC,qual:q}}); }); }
-  if(want('prog')) (par==='major'?MAJ_PROG:MIN_PROG).slice(0,6).forEach(pat=>out.push({key:'prog:'+pat.join('-')+':'+S.root+par,type:'prog',pat}));
+  if(want('prog')) (SCALES[S.scale].progs||(par==='major'?MAJ_PROG:MIN_PROG)).slice(0,6).forEach(pat=>out.push({key:'prog:'+pat.join('-')+':'+S.root+S.scale,type:'prog',pat}));
   if(want('mel')) MELODIES.forEach(([name,seq])=>out.push({key:'mel:'+name,type:'mel',name,seq}));
   return out;
 }
