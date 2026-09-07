@@ -82,6 +82,9 @@
   .meter{display:inline-block;width:80px;height:6px;border-radius:3px;background:var(--surface2);vertical-align:middle;margin-left:8px;overflow:hidden}
   .meter i{display:block;height:100%;background:var(--accent);width:0;transition:width .08s}
   #listen[aria-pressed="true"]{background:var(--raise);border-color:var(--accent);color:var(--accent)}
+  #dgoals[aria-expanded="true"]{background:var(--raise);border-color:var(--accent)}
+  .goals{max-width:720px;margin:0 auto;font-size:.85rem;color:var(--muted);line-height:1.45;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+  .goals>b{color:var(--ink)} .goals ol{margin:4px 0 0 18px;padding:0} .goals li b{color:var(--ink)}
   .key.ok .face{fill:#34d399 !important} .key.bad .face{fill:#ef4444 !important}
   /* board */
   .board{flex:1 1 auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
@@ -290,10 +293,22 @@
         <button class="btn primary" id="dstart">Start round</button>
         <button class="btn" id="dshow" hidden>Show me</button>
         <button class="btn" id="dskip" hidden>Skip</button>
+        <button class="btn" id="dgoals" aria-controls="goals" aria-expanded="false">Goals</button>
       </div>
       <div class="prompt" id="prompt" role="status" aria-live="polite"><small>A round is 10 short items drawn toward your goals. Misses come back sooner; hits space out.</small></div>
       <div class="fb" id="fb"></div>
       <div class="hearing" id="hearing" hidden></div>
+      <div class="goals" id="goals" hidden>
+        <b>What the drills work toward</b>
+        <ol>
+          <li><b>Notes:</b> given a name, press every key with that name in under 3 s.</li>
+          <li><b>Chords:</b> given a triad, play a root-position voicing in the middle register in under 5 s.</li>
+          <li><b>Progressions:</b> play one in time at 60 BPM with smooth voicings and at most one miss per cycle.</li>
+          <li><b>Melodies:</b> play a short one back at 60 BPM with at most one wrong note.</li>
+          <li><b>Scales:</b> a major scale one octave up and down with standard fingering.</li>
+          <li><b>7ths:</b> given a 7th chord, play a voicing in under 5 s.</li>
+        </ol>
+      </div>
     </div>
   </div>
 
@@ -322,29 +337,18 @@
         </svg>
         <h2 id="help-title">Welcome to Melodica Trainer</h2>
       </div>
-      <p class="lead">This is your <b>Suzuki M-37C Plus</b> on screen: 37 keys, F3 to F6, low end at the mouthpiece. Type a chord progression, pick a scale, or run a drill, and the keys to press light up. Tap any key to hear the real instrument.</p>
+      <p class="lead">Your <b>Suzuki M-37C Plus</b> on screen: 37 keys, F3 to F6, low end at the mouthpiece. Type a progression, pick a scale, or run a drill, and the keys to press light up. Tap any key to hear the real instrument.</p>
       <dl>
         <dt>Explore</dt>
-        <dd>Type a progression (<b>Am F C G</b>, or Roman numerals like <b>I V vi IV</b> in the current key) or a melody (<b>C D E C</b>) and press <b>Set</b>, or tap the chord chips, or hit <b>Random</b>. Then <b>Play</b> steps through it in time: each chord's keys light with fingering numbers, and the next chord ghosts in one beat early so your hand can move.</dd>
+        <dd>Type a progression (<b>Am F C G</b> or <b>I V vi IV</b>) or a melody (<b>C D E C</b>), tap the chord chips, or hit <b>Random</b>. <b>Play</b> steps through it in time with fingering, ghosting the next chord a beat early.</dd>
         <dt>Chords</dt>
-        <dd>A chord finder: any chord symbol, with inversions and octave placement, and every place it fits on the keyboard.</dd>
+        <dd>Any chord, every inversion, every place it fits.</dd>
         <dt>Drill</dt>
-        <dd>Short practice rounds toward the goals below: find notes, play chords, play a progression in time, play back a melody. Answer on screen, on the computer keyboard, or by playing the melodica into the microphone.</dd>
+        <dd>Ten-item rounds: find notes, play chords, keep up with a progression, play back a melody. Answer on screen, on the computer keyboard, or on the melodica with <b>Listen</b>. Misses come back sooner.</dd>
         <dt>Options</dt>
-        <dd><b>Labels</b> fade from every key, to C and F landmarks, to none. <b>Names</b> switches note names to scale degrees. <b>View</b> rotates the keyboard the way it looks in your hands (automatic on a phone in portrait). Pick a <b>Register</b> to zoom in on one part of the keyboard, which makes the keys big enough to tap on a phone. <b>Air</b> is breath: it darkens and softens the sound like blowing less.</dd>
-        <dt>Goals</dt>
-        <dd>
-          <ol>
-            <li>Given a <b>note name</b>, press every key with that name in under 3 seconds.</li>
-            <li>Given a <b>triad</b>, play a root-position voicing in the middle register in under 5 seconds.</li>
-            <li>Play a <b>progression in time</b> at 60 BPM with smooth voicings and at most one miss per cycle.</li>
-            <li>Play back a <b>short melody</b> at 60 BPM with at most one wrong note.</li>
-            <li>Play a <b>major scale</b> one octave up and down with standard fingering.</li>
-            <li>Given a <b>7th chord</b>, play a voicing in under 5 seconds.</li>
-          </ol>
-        </dd>
+        <dd><b>Labels</b>: every key, landmarks, or none. <b>Names</b>: notes or degrees. <b>View</b>: how it sits in your hands. <b>Register</b>: zoom to one part of the keyboard. <b>Air</b>: breath.</dd>
         <dt>Computer keyboard</dt>
-        <dd><kbd>Z</kbd>–<kbd>M</kbd> play C4–B4 (sharps on <kbd>S</kbd> <kbd>D</kbd> <kbd>G</kbd> <kbd>H</kbd> <kbd>J</kbd>), <kbd>Q</kbd>–<kbd>U</kbd> play C5–B5 (sharps on <kbd>2</kbd> <kbd>3</kbd> <kbd>5</kbd> <kbd>6</kbd> <kbd>7</kbd>); <kbd>,</kbd> and <kbd>.</kbd> shift an octave.</dd>
+        <dd><kbd>Z</kbd>–<kbd>M</kbd> play C4–B4, <kbd>Q</kbd>–<kbd>U</kbd> play C5–B5, sharps on the row above; <kbd>,</kbd> and <kbd>.</kbd> shift an octave.</dd>
       </dl>
       <p class="start">Try this first: type <b>C G Am F</b>, press <b>Set</b>, set the tempo to <b>60</b>, and press <b>Play</b>. Press along on the melodica.</p>
       <div class="actions"><button class="btn primary" id="help-close">Got it</button></div>
@@ -993,6 +997,7 @@ $('octup').onclick=()=>{ if(!S.chord) return; S.chord.oct=Math.min(2,S.chord.oct
 segWire('dtype','t',v=>{ DR.type=v; if(DR.on) endRound(); });
 $('dstart').onclick=()=>{ if(DR.on) endRound(); else { ac(); loadSamples(); startRound(); } };
 $('dshow').onclick=showAnswer; $('dskip').onclick=skipItem;
+$('dgoals').onclick=()=>{ const open=$('goals').hidden; $('goals').hidden=!open; $('dgoals').setAttribute('aria-expanded',open?'true':'false'); };
 $('listen').innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg> Listen';
 $('listen').onclick=()=>setListen(!MIC.on);
 $('root').onchange=e=>{ S.root=+e.target.value; fullRefresh(); };

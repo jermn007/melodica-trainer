@@ -99,8 +99,10 @@ npm run deploy     # build, then wrangler pages deploy dist --project-name melod
   drills; chord drills stay on-screen. Needs HTTPS (Pages) or localhost.
 - **Input:** pointer with capture (multi-touch chords), keyboard focus + Enter/Space, computer-keyboard piano map
   on `event.code` (Z–M = C4–B4, Q–U = C5–B5, `,`/`.` shift octave; typing in inputs is excluded).
-- **Guide modal:** objectives, mode map, keyboard map, "Try this first" (`C G Am F` at 60 BPM). Shown once
-  (`localStorage.mt_guide_seen`).
+- **Guide modal:** a short mode map, options, the keyboard map and "Try this first" (`C G Am F` at 60 BPM). The
+  objectives were deliberately taken out of the modal (owner: too long); they live in SPEC §1.4, drive the drills,
+  and are readable on demand behind the **Goals** toggle in the Drill bar (`#dgoals` / `#goals`).
+  Shown once (`localStorage.mt_guide_seen`).
 
 ## Design constraints (preserve)
 Single self-contained `index.html`, zero runtime deps, no CDN (only the Cloudflare Web Analytics beacon may be added);
