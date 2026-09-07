@@ -493,13 +493,13 @@ function buildKeys(anim){
   out.push('<rect x="'+(g.nutX+g.boardW*0.3)+'" y="'+stripY+'" width="'+(g.boardW*0.3)+'" height="'+stripH+'" fill="url(#gStreak)" opacity=".7"/>');
   out.push('<rect x="'+bx0+'" y="'+(stripY+stripH)+'" width="'+bw+'" height="'+(g.H-stripY-stripH)+'" fill="url(#gRail)"/>');
   out.push(badge(g));
-  /* mouthpiece: the tube starts at the ring's centre and the ring is drawn over it, so it plugs into the socket */
+  /* mouthpiece: chrome ring first, then the tube on top starting at the ring's centre, so the tube sits in the socket
+     with the chrome rim showing around it */
   const ringX=G.tube+14, ringY=g.top+G.KH*0.62;
   const tubeD='M'+ringX+' '+ringY+' C '+(ringX-36)+' '+ringY+', '+(ringX-44)+' '+(ringY+30)+', '+(ringX-64)+' '+(ringY+44);
+  out.push('<circle cx="'+ringX+'" cy="'+ringY+'" r="9" fill="'+COL.chrome+'" stroke="'+COL.chromeDk+'" stroke-width="3"/>');
   out.push('<path d="'+tubeD+'" fill="none" stroke="'+COL.tube+'" stroke-width="12" stroke-linecap="round"/>');
   out.push('<path d="'+tubeD+'" fill="none" stroke="'+COL.tubeHi+'" stroke-width="3" stroke-dasharray="2 4" stroke-linecap="round"/>');
-  out.push('<circle cx="'+ringX+'" cy="'+ringY+'" r="9" fill="'+COL.chrome+'" stroke="'+COL.chromeDk+'" stroke-width="3"/>');
-  out.push('<circle cx="'+ringX+'" cy="'+ringY+'" r="4" fill="#1a1a1a"/>');
   /* keys: whites first, then blacks; overlays inside each key group */
   const order=LAY.keys.filter(k=>!k.black).concat(LAY.keys.filter(k=>k.black));
   order.forEach((k,idx)=>{
