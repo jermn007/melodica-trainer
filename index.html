@@ -134,18 +134,19 @@
   /* modal */
   .modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,8,15,.74)}
   .modal[hidden]{display:none}
-  .modal-card{background:var(--surface2);border:1px solid var(--line);border-radius:16px;max-width:720px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+  .modal-card{background:var(--surface2);border:1px solid var(--line);border-radius:16px;max-width:792px;width:100%;max-height:92vh;overflow:auto;padding:20px 22px 18px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
   .modal-head{display:flex;align-items:center;gap:12px;margin:0 0 8px}
   .modal-head h2{margin:0;font-size:1.25rem}
   .modal-logo{flex:0 0 auto;width:40px;height:40px;border-radius:10px}
-  .modal-card .lead{margin:0 0 10px;color:var(--muted);font-size:.93rem;line-height:1.45}
-  /* term on the left, text on the right: half the height of a stacked list */
-  .modal-card dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:7px 16px;align-items:start}
-  .modal-card dt{font-weight:800;font-size:.92rem;padding-top:1px}
-  .modal-card dd{margin:0;color:var(--muted);font-size:.9rem;line-height:1.42}
-  @media (max-width:560px){ .modal-card dl{grid-template-columns:1fr;gap:4px} .modal-card dd{margin-bottom:6px} }
+  .modal-card .lead{margin:0 0 12px;color:var(--muted);font-size:.93rem;line-height:1.5}
+  /* term on the left, text on the right: half the height of a stacked list; teal check in the gutter */
+  .modal-card dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:13px 16px;align-items:start;padding-left:12px}
+  .modal-card dt{font-weight:800;font-size:.92rem;padding:2px 0 0 24px;position:relative}
+  .modal-card dt::before{content:'';position:absolute;left:0;top:.3em;width:15px;height:15px;background:var(--accent);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 6 9 17l-5-5' fill='none' stroke='%23000' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M20 6 9 17l-5-5' fill='none' stroke='%23000' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+  .modal-card dd{margin:0;color:var(--muted);font-size:.9rem;line-height:1.5}
+  @media (max-width:560px){ .modal-card dl{grid-template-columns:1fr;gap:4px;padding-left:4px} .modal-card dd{margin-bottom:10px;padding-left:24px} }
   .modal-card ol{margin:6px 0 0 18px;padding:0;color:var(--muted);font-size:.9rem;line-height:1.5}
-  .modal-card .start{margin-top:12px;padding:10px 13px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:.9rem;line-height:1.45}
+  .modal-card .start{margin-top:16px;padding:11px 14px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:.9rem;line-height:1.5}
   .modal-card .start b,.modal-card ol b{color:var(--accent)}
   .modal-card .actions{display:flex;justify-content:flex-end;margin-top:12px}
   kbd{font:inherit;font-size:.8em;font-weight:700;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--surface)}
