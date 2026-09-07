@@ -38,8 +38,12 @@ npm run deploy     # build, then wrangler pages deploy dist --project-name melod
 - **State `S`:** `mode` (explore | chords | drill), `root`, `scale`, `labels` (all | landmarks | none), `names`
   (name | deg), `color` (role | pitch), `register`, `view` (auto | flat | held), `sound` (melodica | simple | off),
   `air`, `fingering`, `voicing` (smooth | root), `line` ({kind:'prog'|'melody', items}), `idx`, `chord`.
-- **Keyboard SVG `buildKeys()`:** string template → `innerHTML`. Livery (blue body, red rail, key bed, the
-  `badge()` logotype, chrome mouthpiece ring, tube), then 22 whites, then 15 blacks;
+- **Keyboard SVG `buildKeys()`:** string template → `innerHTML`. Livery from the owner's photos: a red metallic
+  body (`gRed`) whose top shows as the thin red rail (`gRail`, `G.rail`) and whose front shows as a sliver of red
+  under a **chrome strip** along the key tips (`gSilver`, `G.lip`); blue end caps (`capPath`, `gBlue`, rounded
+  outside, square against the black key bed); white highlight streaks (`gStreak`/`gStreakD`) give the sheet-metal
+  sheen; keys use `gKey`/`gBlack` with a darker front lip on the whites. All gradients live in `DEFS` (object-space,
+  so they rotate with the Held view). Then the `badge()` logotype, chrome mouthpiece ring, tube, 22 whites, 15 blacks;
   The **badge** ("m-37C Plus ≡ⓈSUZUKI≡") is a **vector trace of the real badge**: `tools/badge_crop.png` (the
   owner's photo crop, 383×49 px) → `tools/trace_badge.py` (whiteness score, unsharp mask, 6× upscale, Otsu + offset,
   marching squares, Douglas-Peucker; the oblique crop is mapped onto the panel's true 3.66:1 aspect) →

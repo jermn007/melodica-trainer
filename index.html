@@ -147,7 +147,7 @@
   @media (max-width:820px){ .grp label{display:none} .options .grp label{display:inline-block} .pchip{font-size:1.05rem;padding:9px 14px;min-height:44px} }
   @media (orientation:portrait){
     .board{min-height:0}
-    .svgwrap[data-view="flat"]{flex:0 0 auto;aspect-ratio:1088/190;min-height:96px}
+    .svgwrap[data-view="flat"]{flex:0 0 auto;aspect-ratio:1088/180;min-height:96px}
     .svgwrap[data-view="held"]{flex:1 1 auto;min-height:66vh}
   }
   @media (max-width:520px){
@@ -410,8 +410,25 @@ const PITCH=[
 ];
 
 /* ---------------- keyboard SVG ---------------- */
-const G={W:40,KH:150,BW:24,BH:95,capL:86,capR:60,tube:58,rail:20,gap:1.6};   /* caps: ~51 mm and ~35 mm of the real 110 mm depth */
-function geom(){ const nutX=G.tube+G.capL, boardW=LAY.nw*G.W, top=G.rail+8, H=top+G.KH+12, Wt=nutX+boardW+G.capR; return {nutX,boardW,top,H,Wt}; }
+const G={W:40,KH:150,BW:24,BH:95,capL:86,capR:60,tube:58,rail:12,lip:10,gap:1.6};   /* caps: ~51 mm and ~35 mm of the real 110 mm depth; rail = thin red band; lip = chrome strip + red edge under the key tips */
+function geom(){ const nutX=G.tube+G.capL, boardW=LAY.nw*G.W, top=G.rail+8, H=top+G.KH+G.lip, Wt=nutX+boardW+G.capR; return {nutX,boardW,top,H,Wt}; }
+/* metallic paint + chrome: gradients are in object space, so they rotate with the Held view */
+const DEFS='<defs>'
+ +'<linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9385a"/><stop offset=".3" stop-color="#c8102e"/><stop offset=".7" stop-color="#b00e29"/><stop offset="1" stop-color="#78091c"/></linearGradient>'
+ +'<linearGradient id="gRail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7607a"/><stop offset=".22" stop-color="#d81a3c"/><stop offset=".55" stop-color="#bd1030"/><stop offset=".85" stop-color="#9a0c24"/><stop offset="1" stop-color="#6e0819"/></linearGradient>'
+ +'<linearGradient id="gBlue" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#4a90e0"/><stop offset=".22" stop-color="#2a68b3"/><stop offset=".55" stop-color="#1f5599"/><stop offset=".85" stop-color="#173f74"/><stop offset="1" stop-color="#0f2c53"/></linearGradient>'
+ +'<linearGradient id="gSilver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".28" stop-color="#c3ccd6"/><stop offset=".5" stop-color="#f6f8fb"/><stop offset=".8" stop-color="#8e99a6"/><stop offset="1" stop-color="#5f6976"/></linearGradient>'
+ +'<linearGradient id="gKey" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8f2e3"/><stop offset=".75" stop-color="#f1e8d4"/><stop offset="1" stop-color="#e6dcc4"/></linearGradient>'
+ +'<linearGradient id="gBlack" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3a3a"/><stop offset=".5" stop-color="#1a1a1a"/><stop offset="1" stop-color="#0d0d0d"/></linearGradient>'
+ +'<linearGradient id="gStreak" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".32"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+ +'<linearGradient id="gStreakD" x1="0" y1="0" x2="1" y2="1"><stop offset=".2" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".22"/><stop offset=".7" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+ +'</defs>';
+/* an end cap: rounded on the outside, square against the key bed */
+function capPath(x0,x1,H,r,leftSide){
+  return leftSide
+    ? 'M'+(x0+r)+' 0 H'+x1+' V'+H+' H'+(x0+r)+' Q'+x0+' '+H+' '+x0+' '+(H-r)+' V'+r+' Q'+x0+' 0 '+(x0+r)+' 0 Z'
+    : 'M'+x0+' 0 H'+(x1-r)+' Q'+x1+' 0 '+x1+' '+r+' V'+(H-r)+' Q'+x1+' '+H+' '+(x1-r)+' '+H+' H'+x0+' Z';
+}
 function keyRect(k,g){ if(k.black) return {x:g.nutX+(k.wi+1)*G.W-G.BW/2, y:g.top, w:G.BW, h:G.BH}; return {x:g.nutX+k.wi*G.W+G.gap/2, y:g.top, w:G.W-G.gap, h:G.KH}; }
 let lastVB={w:1050,h:190};
 function isPortrait(){ return !!(window.matchMedia&&matchMedia('(orientation: portrait)').matches); }
@@ -455,13 +472,23 @@ function buildKeys(anim){
   const vb = held ? ('0 '+x0+' '+g.H+' '+(x1-x0)) : (x0+' 0 '+(x1-x0)+' '+g.H);
   out.push('<svg viewBox="'+vb+'" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="group" aria-label="'+esc(name)+'" data-view="'+(held?'held':'flat')+'" font-family="Inter,Segoe UI,Arial,sans-serif">');
   out.push('<title>'+esc(name)+'</title>');
+  out.push(DEFS);
   out.push('<g transform="'+(held?('translate('+g.H+' 0) rotate(90)'):'')+'">');
-  /* livery: blue body, red rail, key bed, left cap badge + mouthpiece ring, tube */
-  out.push('<rect x="'+G.tube+'" y="0" width="'+(g.Wt-G.tube)+'" height="'+g.H+'" rx="12" fill="'+COL.blue+'"/>');
-  out.push('<rect x="'+G.tube+'" y="'+(g.H-6)+'" width="'+(g.Wt-G.tube)+'" height="6" rx="3" fill="'+COL.blueDk+'"/>');
-  out.push('<rect x="'+(g.nutX-6)+'" y="0" width="'+(g.boardW+12)+'" height="'+(G.rail+8)+'" fill="'+COL.red+'"/>');
-  out.push('<rect x="'+(g.nutX-6)+'" y="'+(G.rail+4)+'" width="'+(g.boardW+12)+'" height="4" fill="'+COL.redDk+'"/>');
+  /* livery: red metallic body (rail on top, thin edge under the key tips), blue end caps, black key bed,
+     chrome strip along the key tips, highlight streaks for the sheet-metal sheen, badge, mouthpiece ring, tube */
+  const bx0=g.nutX-6, bx1=g.nutX+g.boardW+6, railH=G.rail+8;
+  out.push('<rect x="'+G.tube+'" y="0" width="'+(g.Wt-G.tube)+'" height="'+g.H+'" rx="12" fill="url(#gRed)"/>');
+  out.push('<path d="'+capPath(G.tube,g.nutX-3,g.H,12,true)+'" fill="url(#gBlue)"/>');
+  out.push('<path d="'+capPath(g.nutX+g.boardW+3,g.Wt,g.H,12,false)+'" fill="url(#gBlue)"/>');
+  out.push('<rect x="'+(G.tube+6)+'" y="0" width="'+(g.nutX-9-G.tube)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
+  out.push('<rect x="'+(g.nutX+g.boardW+3)+'" y="0" width="'+(g.Wt-g.nutX-g.boardW-9)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
+  out.push('<rect x="'+bx0+'" y="0" width="'+(bx1-bx0)+'" height="'+railH+'" fill="url(#gRail)"/>');
+  out.push('<rect x="'+(g.nutX+g.boardW*0.14)+'" y="0" width="'+(g.boardW*0.26)+'" height="'+railH+'" fill="url(#gStreak)"/>');
+  out.push('<rect x="'+(g.nutX+g.boardW*0.62)+'" y="0" width="'+(g.boardW*0.16)+'" height="'+railH+'" fill="url(#gStreak)" opacity=".6"/>');
+  out.push('<rect x="'+bx0+'" y="'+(railH-2)+'" width="'+(bx1-bx0)+'" height="2" fill="#5a0714"/>');
   out.push('<rect x="'+(g.nutX-3)+'" y="'+(g.top-2)+'" width="'+(g.boardW+6)+'" height="'+(G.KH+4)+'" fill="'+COL.bed+'"/>');
+  out.push('<rect x="'+bx0+'" y="'+(g.top+G.KH+1.5)+'" width="'+(bx1-bx0)+'" height="4.5" fill="url(#gSilver)"/>');
+  out.push('<rect x="'+(g.nutX+g.boardW*0.3)+'" y="'+(g.top+G.KH+1.5)+'" width="'+(g.boardW*0.3)+'" height="4.5" fill="url(#gStreak)" opacity=".7"/>');
   out.push(badge(g));
   const ringY=g.top+G.KH*0.62;
   out.push('<circle cx="'+(G.tube+14)+'" cy="'+ringY+'" r="9" fill="'+COL.chrome+'" stroke="'+COL.chromeDk+'" stroke-width="3"/>');
@@ -479,8 +506,9 @@ function buildKeys(anim){
     const rotL = held ? ' transform="rotate(-90 '+cx+' '+labY+')"' : '';
     const aria=fullName(k.m,flats)+(h.inScale&&degLabel(S.root,S.scale,h.pc)?(', degree '+degLabel(S.root,S.scale,h.pc)):'')+(h.isRoot&&h.inScale?', root':'')+(h.inChord?', chord tone':'')+(h.inWin?'':', outside register');
     out.push('<g class="key'+(k.black?' black':' white')+'" data-midi="'+k.m+'" tabindex="0" role="button" aria-label="'+esc(aria)+'">');
-    out.push('<rect class="face '+(k.black?'black':'white')+'" x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="'+(k.black?2.5:3.5)+'" fill="'+(k.black?COL.black:COL.white)+'" stroke="'+(k.black?COL.blackHi:COL.whiteEdge)+'" stroke-width="1"/>');
-    if(k.black) out.push('<rect x="'+(r.x+4)+'" y="'+(r.y+2)+'" width="'+(r.w-8)+'" height="'+(r.h-14)+'" rx="2" fill="'+COL.blackHi+'" opacity=".55" style="pointer-events:none"/>');
+    out.push('<rect class="face '+(k.black?'black':'white')+'" x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="'+(k.black?2.5:3.5)+'" fill="'+(k.black?'url(#gBlack)':'url(#gKey)')+'" stroke="'+(k.black?COL.blackHi:COL.whiteEdge)+'" stroke-width="1"/>');
+    if(k.black) out.push('<rect x="'+(r.x+4)+'" y="'+(r.y+2)+'" width="'+(r.w-8)+'" height="'+(r.h-14)+'" rx="2" fill="#5a5a5a" opacity=".5" style="pointer-events:none"/>');
+    else out.push('<rect x="'+(r.x+0.5)+'" y="'+(r.y+r.h-4)+'" width="'+(r.w-1)+'" height="4" rx="1.5" fill="#d3c8b0" opacity=".9" style="pointer-events:none"/>');
     if(!h.inWin) out.push('<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.h+'" rx="3" fill="'+COL.dim+'" style="pointer-events:none"/>');
     if(showLab) out.push('<text x="'+cx+'" y="'+labY+'" text-anchor="middle" font-size="'+(k.black?8.5:10)+'" font-weight="700" fill="'+(k.black?COL.labB:COL.lab)+'" style="pointer-events:none"'+rotL+'>'+esc(noteName(h.pc,flats||h.isBlue))+'</text>');
     if(showDot){
