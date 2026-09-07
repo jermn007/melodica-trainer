@@ -134,18 +134,20 @@
   /* modal */
   .modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(4,8,15,.74)}
   .modal[hidden]{display:none}
-  .modal-card{background:var(--surface2);border:1px solid var(--line);border-radius:16px;max-width:600px;width:100%;max-height:88vh;overflow:auto;padding:22px 22px 20px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
-  .modal-head{display:flex;align-items:center;gap:14px;margin:0 0 10px}
-  .modal-head h2{margin:0;font-size:1.3rem}
-  .modal-logo{flex:0 0 auto;width:48px;height:48px;border-radius:12px}
-  .modal-card .lead{margin:0 0 12px;color:var(--muted);font-size:.95rem;line-height:1.5}
-  .modal-card dl{margin:0;display:grid;gap:10px}
-  .modal-card dt{font-weight:800;font-size:.95rem}
-  .modal-card dd{margin:2px 0 0;color:var(--muted);font-size:.9rem;line-height:1.45}
+  .modal-card{background:var(--surface2);border:1px solid var(--line);border-radius:16px;max-width:720px;width:100%;max-height:92vh;overflow:auto;padding:18px 20px 16px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+  .modal-head{display:flex;align-items:center;gap:12px;margin:0 0 8px}
+  .modal-head h2{margin:0;font-size:1.25rem}
+  .modal-logo{flex:0 0 auto;width:40px;height:40px;border-radius:10px}
+  .modal-card .lead{margin:0 0 10px;color:var(--muted);font-size:.93rem;line-height:1.45}
+  /* term on the left, text on the right: half the height of a stacked list */
+  .modal-card dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:7px 16px;align-items:start}
+  .modal-card dt{font-weight:800;font-size:.92rem;padding-top:1px}
+  .modal-card dd{margin:0;color:var(--muted);font-size:.9rem;line-height:1.42}
+  @media (max-width:560px){ .modal-card dl{grid-template-columns:1fr;gap:4px} .modal-card dd{margin-bottom:6px} }
   .modal-card ol{margin:6px 0 0 18px;padding:0;color:var(--muted);font-size:.9rem;line-height:1.5}
-  .modal-card .start{margin-top:14px;padding:11px 13px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:.9rem;line-height:1.45}
+  .modal-card .start{margin-top:12px;padding:10px 13px;background:var(--surface);border:1px solid var(--line);border-radius:10px;font-size:.9rem;line-height:1.45}
   .modal-card .start b,.modal-card ol b{color:var(--accent)}
-  .modal-card .actions{display:flex;justify-content:flex-end;margin-top:16px}
+  .modal-card .actions{display:flex;justify-content:flex-end;margin-top:12px}
   kbd{font:inherit;font-size:.8em;font-weight:700;padding:1px 6px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--surface)}
   @media (max-width:820px){ .grp label{display:none} .options .grp label{display:inline-block} .pchip{font-size:1.05rem;padding:9px 14px;min-height:44px} }
   @media (orientation:portrait){
@@ -347,7 +349,7 @@
         <dd>Ten-item rounds: find notes, play chords, keep up with a progression, play back a melody. Answer on screen, on the computer keyboard, or on the melodica with <b>Listen</b>. Misses come back sooner.</dd>
         <dt>Options</dt>
         <dd><b>Labels</b>: every key, landmarks, or none. <b>Names</b>: notes or degrees. <b>View</b>: how it sits in your hands. <b>Register</b>: zoom to one part of the keyboard. <b>Air</b>: breath.</dd>
-        <dt>Computer keyboard</dt>
+        <dt>Keyboard</dt>
         <dd><kbd>Z</kbd>–<kbd>M</kbd> play C4–B4, <kbd>Q</kbd>–<kbd>U</kbd> play C5–B5, sharps on the row above; <kbd>,</kbd> and <kbd>.</kbd> shift an octave.</dd>
       </dl>
       <p class="start">Try this first: type <b>C G Am F</b>, press <b>Set</b>, set the tempo to <b>60</b>, and press <b>Play</b>. Press along on the melodica.</p>
