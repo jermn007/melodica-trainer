@@ -38,8 +38,12 @@ npm run deploy     # build, then wrangler pages deploy dist --project-name melod
 - **State `S`:** `mode` (explore | chords | drill), `root`, `scale`, `labels` (all | landmarks | none), `names`
   (name | deg), `color` (role | pitch), `register`, `view` (auto | flat | held), `sound` (melodica | simple | off),
   `air`, `fingering`, `voicing` (smooth | root), `line` ({kind:'prog'|'melody', items}), `idx`, `chord`.
-- **Keyboard SVG `buildKeys()`:** string template → `innerHTML`. Livery (blue body, red rail, key bed, M-37C badge,
-  chrome mouthpiece ring, tube), then 22 whites, then 15 blacks; each key is `<g class="key" role="button"
+- **Keyboard SVG `buildKeys()`:** string template → `innerHTML`. Livery (blue body, red rail, key bed, the
+  `badge()` logotype, chrome mouthpiece ring, tube), then 22 whites, then 15 blacks;
+  The **badge** ("m-37C Plus ≡ⓈSUZUKI≡") is hand-drawn vector lettering on a 300×72 canvas (baseline y=54,
+  italic via `skewX(-12)`), scaled 0.5 and rotated −90° into a recessed panel beside the keys, so it reads
+  bottom-to-top in Flat view and upright in Held view, matching the owner's photo. No font is involved; edit the
+  path data in `badge()` to refine letterforms. each key is `<g class="key" role="button"
   tabindex="0" data-midi>` with the face rect and overlays: register dim, next-chord dashed ring, chord-tone emerald
   ring, root/blue rings, the dot (label = note name or degree), fingering badge. `highlightFor(midi)` decides what a
   key shows this render. **Held view** = the flat drawing wrapped in `translate(H 0) rotate(90)` (low F at the top,

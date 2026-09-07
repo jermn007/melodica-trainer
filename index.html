@@ -429,6 +429,44 @@ function highlightFor(midi){
   let fing=''; if(S.fingering&&cur&&cur.fingers){ const i=cur.midis.indexOf(midi); if(i>=0) fing=cur.fingers[i]; }
   return {pc,inWin,inChord,inNext,isMel,inScale,isRoot:pc===S.root,isBlue:pc===bluePC,label,fing,flats};
 }
+/* The "m-37C Plus ≡ SUZUKI ≡" badge on the low-F end cap, drawn as vector lettering (no font can match the
+   real logotype, and the app ships no fonts). Modelled on the owner's photo: a recessed panel beside the keys
+   spanning ~80% of the cap, text reading across the keys with ascenders toward the mouthpiece end. Canvas is
+   300 x 72 units, baseline y=54, scaled 0.5 and rotated -90 so it reads bottom-to-top in Flat view and
+   upright left-to-right in Held view. */
+function badge(g){
+  const SILVER='#e8edf3', k=0.5, px=g.nutX-44, py=(g.H-150)/2+150;   // panel: 36 x 150 in flat units, beside the keys
+  const p=[];
+  p.push('<g transform="translate('+px+' '+py+') rotate(-90) scale('+k+')" style="pointer-events:none">');
+  p.push('<rect x="0" y="0" width="300" height="72" rx="11" fill="'+COL.blueDk+'" stroke="#6b93c8" stroke-opacity=".55" stroke-width="1.6"/>');
+  p.push('<rect x="2.5" y="2.5" width="295" height="67" rx="9" fill="'+COL.blue+'"/>');
+  p.push('<g fill="none" stroke="'+SILVER+'" stroke-linecap="round" stroke-linejoin="round" transform="translate(9 0) scale(0.9 1) translate(11.5 0) skewX(-12)">');
+  /* m-37C : brush-script m, hyphen, bold digits */
+  p.push('<path stroke-width="6" d="M14 47 Q18 30 23 26 Q28 23 29 30 L26 53 Q30 31 36 27 Q41 24 41 31 L38 53 Q42 31 48 27 Q53 24 53 31 L50 51 Q52 56 57 52"/>');
+  p.push('<path stroke-width="4.2" d="M61 40 L69 40"/>');
+  p.push('<path stroke-width="5.8" d="M73 24 C78 15 92 15 91 25 C91 32 86 35 82 35 C89 35 94 40 93 47 C92 56 78 57 72 49"/>');
+  p.push('<path stroke-width="5.8" d="M96 20 L114 20 L102 54"/>');
+  p.push('<path stroke-width="5.8" d="M136 27 C130 14 116 17 116 36 C116 55 130 58 136 46"/>');
+  /* Plus : script */
+  p.push('<path stroke-width="4.6" d="M141 56 Q145 58 147 52 C149 42 151 33 153 27 C161 23 169 27 165 36 C162 42 155 42 150 40"/>');
+  p.push('<path stroke-width="3.4" d="M143 58 C156 63 176 63 194 58"/>');
+  p.push('<path stroke-width="4.2" d="M165 54 Q170 40 172 29 Q173 26 171 29 Q169 40 167 54"/>');
+  p.push('<path stroke-width="4.2" d="M175 40 L173 51 Q173 55 177 53 Q181 51 183 40 L181 54"/>');
+  p.push('<path stroke-width="4.2" d="M192 41 Q187 38 186 42 Q186 46 190 47 Q193 49 191 53 Q188 56 184 53"/>');
+  /* speed lines, S mark, SUZUKI, speed lines */
+  p.push('<path stroke-width="3" d="M199 35 L213 35 M197 45 L213 45"/>');
+  p.push('<rect x="217" y="31" width="18" height="18" rx="3.5" stroke-width="2.4"/>');
+  p.push('<path stroke-width="3.3" d="M230 35 C225 32 220 35 222 38 C224 41 230 40 229 44 C228 47 223 47 220 45"/>');
+  p.push('<path stroke-width="4.8" d="M244 33.5 C241 30 237.5 31.5 237.5 35.5 C237.5 40 245 40 245 44.5 C245 49 240 50 237 46.5"/>');
+  p.push('<path stroke-width="4.8" d="M249.5 31 L249.5 44.5 Q249.5 49 253.5 49 Q257.5 49 257.5 44.5 L257.5 31"/>');
+  p.push('<path stroke-width="4.8" d="M261.5 31 L270 31 L261.5 49 L270 49"/>');
+  p.push('<path stroke-width="4.8" d="M274 31 L274 44.5 Q274 49 278 49 Q282 49 282 44.5 L282 31"/>');
+  p.push('<path stroke-width="4.8" d="M286 31 L286 49 M293.5 31 L286 40.5 L293.5 49"/>');
+  p.push('<path stroke-width="4.8" d="M297.5 31 L297.5 49"/>');
+  p.push('<path stroke-width="3" d="M301 34 L312 34 M301 40 L309 40 M301 46 L306 46"/>');
+  p.push('</g></g>');
+  return p.join('');
+}
 function buildKeys(anim){
   const A=(anim==='full'), RA=(anim==='full'||anim==='chord'), pitch=(S.color==='pitch'), held=viewIsHeld();
   const g=geom(); const flats=usesFlats(S.root,S.scale);
@@ -449,9 +487,7 @@ function buildKeys(anim){
   out.push('<rect x="'+(g.nutX-6)+'" y="0" width="'+(g.boardW+12)+'" height="'+(G.rail+8)+'" fill="'+COL.red+'"/>');
   out.push('<rect x="'+(g.nutX-6)+'" y="'+(G.rail+4)+'" width="'+(g.boardW+12)+'" height="4" fill="'+COL.redDk+'"/>');
   out.push('<rect x="'+(g.nutX-3)+'" y="'+(g.top-2)+'" width="'+(g.boardW+6)+'" height="'+(G.KH+4)+'" fill="'+COL.bed+'"/>');
-  const capCx=G.tube+G.capL/2;
-  out.push('<text x="'+capCx+'" y="'+(g.top+30)+'" text-anchor="middle" font-size="11" font-style="italic" font-weight="800" fill="'+COL.white+'"'+(held?' transform="rotate(-90 '+capCx+' '+(g.top+30)+')"':'')+'>M-37C</text>');
-  out.push('<text x="'+capCx+'" y="'+(g.top+44)+'" text-anchor="middle" font-size="8" font-weight="700" letter-spacing="1" fill="'+COL.white+'"'+(held?' transform="rotate(-90 '+capCx+' '+(g.top+44)+')"':'')+'>PLUS</text>');
+  out.push(badge(g));
   const ringY=g.top+G.KH*0.62;
   out.push('<circle cx="'+(G.tube+14)+'" cy="'+ringY+'" r="9" fill="'+COL.chrome+'" stroke="'+COL.chromeDk+'" stroke-width="3"/>');
   out.push('<path d="M'+(G.tube+6)+' '+ringY+' C '+(G.tube-24)+' '+ringY+', '+(G.tube-30)+' '+(ringY+30)+', '+(G.tube-50)+' '+(ringY+44)+'" fill="none" stroke="'+COL.tube+'" stroke-width="12" stroke-linecap="round"/>');
