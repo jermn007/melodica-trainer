@@ -34,8 +34,9 @@ npm run deploy     # build, then wrangler pages deploy dist --project-name melod
 - **Theory:** copied from fretboard-trainer (`NOTES/FLAT`, `SCALES` incl. blues with blue note, `DIA/ROMAN`, `CHORD_IV`
   + sus2/sus4, `usesFlats`, `diatonic`, `chordTones`, `parseChord`). Blue notes always spell flat. A scale entry may
   carry its own harmony: `flat` (degree indices that always spell flat), `qual`/`roman` (triad per degree, used by
-  `diatonic()` instead of the parent-scale set) and `progs` (Random pool). **Double harmonic major** uses all three
-  (Db/Ab in C; I bII iii iv V bVI+ vii°; I–bII–I style pools). `spell(pc,root,scale)` is the one place that decides a
+  `diatonic()` instead of the parent-scale set) and `progs` (Random pool). **Double harmonic major**, **Phrygian**
+  and **Phrygian dominant** use all three (e.g. C double harmonic: Db/Ab, I bII iii iv V bVI+ vii°; A Phrygian:
+  Bb, i bII bIII iv v° bVI bvii; C Phrygian dominant: Db/Ab/Bb, I bII iii° iv v° bVI+ bvii; drone-style pools). `spell(pc,root,scale)` is the one place that decides a
   note's spelling; Roman numerals are rooted on the parent major/minor degrees so `bII` is always the flat second.
 - **Instrument:** `KB={lo:53,hi:89}` is the only instrument-specific constant; `LAY` maps each MIDI note to a white
   index / black flag. `REGISTERS` = Full / Low F3–F4 / Middle C4–C5 / High C5–F6.

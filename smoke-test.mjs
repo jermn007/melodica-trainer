@@ -82,6 +82,15 @@ setTimeout(() => {
   ok('I bII V I resolves to C Db G C', [...$('prog').querySelectorAll('.pchip')].map(b => b.textContent).join(' ') === 'C Db G C', [...$('prog').querySelectorAll('.pchip')].map(b => b.textContent).join(' '));
   $('randprog').dispatchEvent(evt('click'));
   ok('random uses the desert pool with bII in its name', /bII/.test($('progname').textContent), $('progname').textContent);
+  // phrygian (A): Bb spelled flat, chords Am Bb C Dm Edim F Gm; phrygian dominant (C): C Db Edim Fm Gdim Abaug Bbm
+  $('root').value = '9'; $('root').dispatchEvent(evt('change')); $('scale').value = 'phrygian'; $('scale').dispatchEvent(evt('change'));
+  const ph = [...$('diatonic').querySelectorAll('.chip')].map(c => c.textContent.trim().split(/\s+/)[0]);
+  ok('A phrygian chords are Am Bb C Dm Edim F Gm', ph.join(' ') === 'Am Bb C Dm Edim F Gm', ph.join(' '));
+  ok('A phrygian spells Bb on the keys', svg().includes('>Bb<') && !svg().includes('>A#<'));
+  $('root').value = '0'; $('root').dispatchEvent(evt('change')); $('scale').value = 'phrygian_dominant'; $('scale').dispatchEvent(evt('change'));
+  const pd = [...$('diatonic').querySelectorAll('.chip')].map(c => c.textContent.trim().split(/\s+/)[0]);
+  ok('C phrygian dominant chords are C Db Edim Fm Gdim Abaug Bbm', pd.join(' ') === 'C Db Edim Fm Gdim Abaug Bbm', pd.join(' '));
+  ok('C phrygian dominant spells Db Ab Bb', svg().includes('>Db<') && svg().includes('>Ab<') && svg().includes('>Bb<') && !svg().includes('>A#<'));
   $('scale').value = 'major'; $('scale').dispatchEvent(evt('change')); $('clearprog').dispatchEvent(evt('click'));
 
   // held view

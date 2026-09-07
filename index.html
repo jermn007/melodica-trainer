@@ -199,6 +199,8 @@
         <option value="major_blues">Major blues</option>
         <option value="minor_blues">Minor blues</option>
         <option value="double_harmonic">Double harmonic major</option>
+        <option value="phrygian">Phrygian</option>
+        <option value="phrygian_dominant">Phrygian dominant</option>
       </select>
     </div>
     <div class="grp"><label>Register</label>
@@ -366,6 +368,14 @@ const SCALES={
   double_harmonic:{iv:[0,1,4,5,7,8,11], deg:['1','b2','3','4','5','b6','7'], parent:'major', title:'Double Harmonic Major', flat:[1,5],
     qual:['','','m','m','','aug','dim'], roman:['I','bII','iii','iv','V','bVI+','vii°'],
     progs:[[0,1,0,1],[0,1,4,0],[3,0,1,0],[0,4,1,0],[0,3,1,0],[0,1,3,4,0]]},
+  /* Phrygian: 1 b2 b3 4 5 b6 b7 (the b2 spells flat). Chords i bII bIII iv v° bVI bvii; drone-style pools. */
+  phrygian:{iv:[0,1,3,5,7,8,10], deg:['1','b2','b3','4','5','b6','b7'], parent:'natural_minor', title:'Phrygian', flat:[1],
+    qual:['m','','','m','dim','','m'], roman:['i','bII','bIII','iv','v°','bVI','bvii'],
+    progs:[[0,1,0,1],[0,1,2,1],[0,5,1,0],[3,0,1,0],[0,6,1,0],[0,1,0,5]]},
+  /* Phrygian dominant (Hijaz, 5th mode of harmonic minor): 1 b2 3 4 5 b6 b7. Chords I bII iii° iv v° bVI+ bvii. */
+  phrygian_dominant:{iv:[0,1,4,5,7,8,10], deg:['1','b2','3','4','5','b6','b7'], parent:'major', title:'Phrygian Dominant', flat:[1,5,6],
+    qual:['','','dim','m','dim','aug','m'], roman:['I','bII','iii°','iv','v°','bVI+','bvii'],
+    progs:[[0,1,0,1],[0,6,1,0],[3,0,1,0],[0,5,1,0],[0,3,1,0],[0,1,6,0]]},
 };
 const DIA={ major:['','m','m','','','m','dim'], natural_minor:['m','dim','','m','m','','' ] };
 const ROMAN={ major:['I','ii','iii','IV','V','vi','vii°'], natural_minor:['i','ii°','III','iv','v','VI','VII'] };
