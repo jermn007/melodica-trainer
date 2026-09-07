@@ -482,8 +482,8 @@ function buildKeys(anim){
   out.push('<rect x="'+G.tube+'" y="0" width="'+(g.Wt-G.tube)+'" height="'+g.H+'" rx="12" fill="url(#gRed)"/>');
   out.push('<path d="'+capPath(G.tube,bx0,g.H,12,true)+'" fill="url(#gBlue)"/>');
   out.push('<path d="'+capPath(bx1,g.Wt,g.H,12,false)+'" fill="url(#gBlue)"/>');
-  out.push('<rect x="'+(G.tube+6)+'" y="0" width="'+(bx0-6-G.tube)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
-  out.push('<rect x="'+bx1+'" y="0" width="'+(g.Wt-bx1-6)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
+  out.push('<path d="'+capPath(G.tube,bx0,g.H,12,true)+'" fill="url(#gStreakD)"/>');
+  out.push('<path d="'+capPath(bx1,g.Wt,g.H,12,false)+'" fill="url(#gStreakD)"/>');
   out.push('<rect x="'+bx0+'" y="0" width="'+bw+'" height="'+railH+'" fill="url(#gRail)"/>');
   out.push('<rect x="'+(g.nutX+g.boardW*0.14)+'" y="0" width="'+(g.boardW*0.26)+'" height="'+railH+'" fill="url(#gStreak)"/>');
   out.push('<rect x="'+(g.nutX+g.boardW*0.62)+'" y="0" width="'+(g.boardW*0.16)+'" height="'+railH+'" fill="url(#gStreak)" opacity=".6"/>');
