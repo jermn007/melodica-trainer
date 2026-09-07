@@ -21,7 +21,8 @@ block = (
 '   exactly as on the instrument. No font involved. */\n' % (data['w'], data['h']) +
 'const BADGE={w:%s,h:%s,iou:%s,d:"%s"};\n' % (data['w'], data['h'], data.get('iou', 0), data['d']) +
 'function badge(g){\n'
-'  const k=150/BADGE.w, th=BADGE.h*k, px=g.nutX-6-th, py=(g.H-150)/2+150;   /* panel: 150 long, beside the keys */\n'
+'  /* panel: 150 long, centred between the mouthpiece ring (right edge G.tube+23) and the cap\'s inner edge (g.nutX-3) */\n'
+'  const k=150/BADGE.w, th=BADGE.h*k, ringR=G.tube+23, capIn=g.nutX-3, px=ringR+(capIn-ringR-th)/2, py=(g.H-150)/2+150;\n'
 '  return \'<g transform="translate(\'+px+\' \'+py+\') rotate(-90) scale(\'+k+\')" style="pointer-events:none">\'\n'
 '    +\'<rect x="-2" y="-2" width="\'+(BADGE.w+4)+\'" height="\'+(BADGE.h+4)+\'" rx="10" fill="\'+COL.blueDk+\'" stroke="#6b93c8" stroke-opacity=".55" stroke-width="1.6"/>\'\n'
 '    +\'<rect x="0.5" y="0.5" width="\'+(BADGE.w-1)+\'" height="\'+(BADGE.h-1)+\'" rx="8" fill="\'+COL.blue+\'"/>\'\n'
