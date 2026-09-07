@@ -476,19 +476,21 @@ function buildKeys(anim){
   out.push('<g transform="'+(held?('translate('+g.H+' 0) rotate(90)'):'')+'">');
   /* livery: red metallic body (rail on top, thin edge under the key tips), blue end caps, black key bed,
      chrome strip along the key tips, highlight streaks for the sheet-metal sheen, badge, mouthpiece ring, tube */
-  const bx0=g.nutX-6, bx1=g.nutX+g.boardW+6, railH=G.rail+8;
+  /* one shared span for the rail, key bed, chrome strip and red edge; the caps end exactly where it begins */
+  const bx0=g.nutX-3, bx1=g.nutX+g.boardW+3, bw=bx1-bx0, railH=G.rail+8, stripY=g.top+G.KH+1.5, stripH=4.5;
   out.push('<rect x="'+G.tube+'" y="0" width="'+(g.Wt-G.tube)+'" height="'+g.H+'" rx="12" fill="url(#gRed)"/>');
-  out.push('<path d="'+capPath(G.tube,g.nutX-3,g.H,12,true)+'" fill="url(#gBlue)"/>');
-  out.push('<path d="'+capPath(g.nutX+g.boardW+3,g.Wt,g.H,12,false)+'" fill="url(#gBlue)"/>');
-  out.push('<rect x="'+(G.tube+6)+'" y="0" width="'+(g.nutX-9-G.tube)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
-  out.push('<rect x="'+(g.nutX+g.boardW+3)+'" y="0" width="'+(g.Wt-g.nutX-g.boardW-9)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
-  out.push('<rect x="'+bx0+'" y="0" width="'+(bx1-bx0)+'" height="'+railH+'" fill="url(#gRail)"/>');
+  out.push('<path d="'+capPath(G.tube,bx0,g.H,12,true)+'" fill="url(#gBlue)"/>');
+  out.push('<path d="'+capPath(bx1,g.Wt,g.H,12,false)+'" fill="url(#gBlue)"/>');
+  out.push('<rect x="'+(G.tube+6)+'" y="0" width="'+(bx0-6-G.tube)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
+  out.push('<rect x="'+bx1+'" y="0" width="'+(g.Wt-bx1-6)+'" height="'+g.H+'" fill="url(#gStreakD)"/>');
+  out.push('<rect x="'+bx0+'" y="0" width="'+bw+'" height="'+railH+'" fill="url(#gRail)"/>');
   out.push('<rect x="'+(g.nutX+g.boardW*0.14)+'" y="0" width="'+(g.boardW*0.26)+'" height="'+railH+'" fill="url(#gStreak)"/>');
   out.push('<rect x="'+(g.nutX+g.boardW*0.62)+'" y="0" width="'+(g.boardW*0.16)+'" height="'+railH+'" fill="url(#gStreak)" opacity=".6"/>');
-  out.push('<rect x="'+bx0+'" y="'+(railH-2)+'" width="'+(bx1-bx0)+'" height="2" fill="#5a0714"/>');
-  out.push('<rect x="'+(g.nutX-3)+'" y="'+(g.top-2)+'" width="'+(g.boardW+6)+'" height="'+(G.KH+4)+'" fill="'+COL.bed+'"/>');
-  out.push('<rect x="'+bx0+'" y="'+(g.top+G.KH+1.5)+'" width="'+(bx1-bx0)+'" height="4.5" fill="url(#gSilver)"/>');
-  out.push('<rect x="'+(g.nutX+g.boardW*0.3)+'" y="'+(g.top+G.KH+1.5)+'" width="'+(g.boardW*0.3)+'" height="4.5" fill="url(#gStreak)" opacity=".7"/>');
+  out.push('<rect x="'+bx0+'" y="'+(railH-2)+'" width="'+bw+'" height="2" fill="#5a0714"/>');
+  out.push('<rect x="'+bx0+'" y="'+(g.top-2)+'" width="'+bw+'" height="'+(G.KH+4)+'" fill="'+COL.bed+'"/>');
+  out.push('<rect x="'+bx0+'" y="'+stripY+'" width="'+bw+'" height="'+stripH+'" fill="url(#gSilver)"/>');
+  out.push('<rect x="'+(g.nutX+g.boardW*0.3)+'" y="'+stripY+'" width="'+(g.boardW*0.3)+'" height="'+stripH+'" fill="url(#gStreak)" opacity=".7"/>');
+  out.push('<rect x="'+bx0+'" y="'+(stripY+stripH)+'" width="'+bw+'" height="'+(g.H-stripY-stripH)+'" fill="url(#gRail)"/>');
   out.push(badge(g));
   const ringY=g.top+G.KH*0.62;
   out.push('<circle cx="'+(G.tube+14)+'" cy="'+ringY+'" r="9" fill="'+COL.chrome+'" stroke="'+COL.chromeDk+'" stroke-width="3"/>');
