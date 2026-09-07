@@ -1,0 +1,17 @@
+{
+  "name": "melodica-trainer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Single-file interactive melodica trainer for the Suzuki M-37C Plus: an on-screen keyboard that shows which keys to press for chords, progressions, scales, notes and melodies, with a sampled melodica sound and drills. Zero runtime dependencies.",
+  "scripts": {
+    "dev": "npx --yes serve -l 5174 .",
+    "start": "npx --yes serve -l 5174 .",
+    "test": "node smoke-test.mjs",
+    "samples": "node samples.mjs",
+    "build": "node samples.mjs && node build.mjs",
+    "deploy": "npm run build && npx --yes wrangler pages deploy dist --project-name melodica-trainer"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}
