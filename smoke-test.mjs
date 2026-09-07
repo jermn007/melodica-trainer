@@ -51,6 +51,12 @@ setTimeout(() => {
   $('register').value = 'mid'; $('register').dispatchEvent(evt('change'));
   ok('register Middle dims keys outside C4–C5', (svg().match(/rgba\(11,15,23,\.58\)/g) || []).length === 37 - 13, 'dimmed=' + (svg().match(/rgba\(11,15,23,\.58\)/g) || []).length);
   ok('subtitle shows register', /Register C4–C5/.test($('bsub').textContent), $('bsub').textContent);
+  const vbZoom = svg().match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
+  ok('register zoom crops the view to the window', vbZoom[0] > 0 && vbZoom[2] < 700, JSON.stringify(vbZoom));
+  $('zoom').querySelectorAll('button')[1].dispatchEvent(evt('click'));
+  const vbFull = svg().match(/viewBox="([^"]+)"/)[1].split(' ').map(Number);
+  ok('zoom Full shows the whole instrument again', vbFull[0] === 0 && vbFull[2] > 1000, JSON.stringify(vbFull));
+  $('zoom').querySelectorAll('button')[0].dispatchEvent(evt('click'));
   $('register').value = ''; $('register').dispatchEvent(evt('change'));
 
   // scale change: A minor pentatonic -> 5 pitch classes across the range
@@ -110,6 +116,57 @@ setTimeout(() => {
   d.dispatchEvent(new window.KeyboardEvent('keydown', { code: 'KeyZ', bubbles: true }));
   ok('computer keyboard Z presses C4', !!$('svgwrap').querySelector('.key[data-midi="60"].on'));
   d.dispatchEvent(new window.KeyboardEvent('keyup', { code: 'KeyZ', bubbles: true }));
+
+  // chords mode: chord finder, inversions, octave, placements
+  $('mode').querySelectorAll('button')[1].dispatchEvent(evt('click'));
+  ok('chords mode shows the chord row and hides the progression rows', !$('chordrow').hidden && $('progrow').hidden && $('transrow').hidden);
+  ok('chords mode auto-picks the I chord with spelling in the readout', /^C · C E G · root$/.test($('bnow').textContent), $('bnow').textContent);
+  $('chordin').value = 'Dm7'; $('setchord').dispatchEvent(evt('click'));
+  const ch = window.eval('S.chord');
+  ok('Dm7 finds a 4-note voicing with fingering', ch && ch.voicing && ch.voicing.midis.length === 4 && ch.voicing.fingers.length === 4, JSON.stringify(ch && ch.voicing));
+  ok('3rd-inversion button appears for a 4-note chord', !$('inv').querySelectorAll('button')[3].hidden);
+  $('inv').querySelectorAll('button')[1].dispatchEvent(evt('click'));
+  ok('1st inversion puts F at the bottom', window.eval('S.chord.voicing.inv') === 1 && window.eval('S.chord.voicing.midis[0]') % 12 === 5, window.eval('JSON.stringify(S.chord.voicing.midis)'));
+  const before = window.eval('S.chord.voicing.midis[0]'); $('octup').dispatchEvent(evt('click'));
+  ok('+8va moves the voicing up (or stays at the top of the range)', window.eval('S.chord.voicing.midis[0]') >= before);
+  ok('placements strip lists every fit', $('alts').querySelectorAll('.chip').length === window.eval('S.chord.list.length') && $('alts').querySelectorAll('.chip').length > 4, $('alts').querySelectorAll('.chip').length);
+  $('mode').querySelectorAll('button')[0].dispatchEvent(evt('click'));
+  ok('back to explore restores the rows', !$('progrow').hidden && $('chordrow').hidden);
+
+  // drill mode: note item + chord item via press(), Leitner persists
+  window.localStorage.removeItem('mt_leitner');
+  $('mode').querySelectorAll('button')[2].dispatchEvent(evt('click'));
+  ok('drill mode hides scale dots and shows the drill bar', dots() === 0 && !$('drillbar').hidden);
+  $('dtype').querySelectorAll('button')[1].dispatchEvent(evt('click'));  // Notes
+  $('dstart').dispatchEvent(evt('click'));
+  const DR = window.eval('DR');
+  ok('a note round starts with 10 items and a prompt', DR.on && DR.items.length === 10 && /Press every/.test($('prompt').textContent), $('prompt').textContent);
+  const pc = DR.cur.item.pc; const expected = [...DR.cur.expected];
+  window.eval('press(' + ((pc + 1) % 12 + 60) + '); release(' + ((pc + 1) % 12 + 60) + ')');   // one wrong key
+  expected.forEach(m => window.eval('press(' + m + '); release(' + m + ')'));
+  ok('pressing all instances completes the item; the wrong key counts as a miss', /✗ 1 wrong key/.test($('fb').textContent), $('fb').textContent);
+  const L1 = JSON.parse(window.localStorage.getItem('mt_leitner') || '{}');
+  ok('Leitner box recorded for the missed note (box 0)', L1['note:' + pc] && L1['note:' + pc].box === 0, JSON.stringify(L1));
+  window.eval('endRound()');
+  $('dtype').querySelectorAll('button')[2].dispatchEvent(evt('click'));  // Chords
+  $('dstart').dispatchEvent(evt('click'));
+  const cItem = DR.cur.item; const pcs = [...DR.cur.pcs];
+  ok('a chord item prompts to play a chord', /Play/.test($('prompt').textContent) && pcs.length >= 3, $('prompt').textContent);
+  const midis = pcs.map(p => 60 + ((p - 0 + 12) % 12));  // one octave placement C4..B4
+  midis.forEach(m => window.eval('press(' + m + ')'));
+  ok('holding the chord tones completes the chord item correctly', /✓ Correct/.test($('fb').textContent), $('fb').textContent);
+  midis.forEach(m => window.eval('release(' + m + ')'));
+  const L2 = JSON.parse(window.localStorage.getItem('mt_leitner') || '{}');
+  ok('Leitner promotes the correct chord to box 1', L2[cItem.key] && L2[cItem.key].box === 1, JSON.stringify(L2[cItem.key]));
+  window.eval('endRound()');
+  $('mode').querySelectorAll('button')[0].dispatchEvent(evt('click'));
+
+  // pitch detector on a synthetic A4 (440 Hz) and a low F3 (174.6 Hz)
+  const sr = 44100, mk = f => { const b = new Float32Array(2048); for (let i = 0; i < b.length; i++) b[i] = 0.5 * Math.sin(2 * Math.PI * f * i / sr) + 0.2 * Math.sin(4 * Math.PI * f * i / sr) + 0.1 * Math.sin(6 * Math.PI * f * i / sr); return b; };
+  const fA = window.pitchFromBuffer(mk(440), sr), fF = window.pitchFromBuffer(mk(174.61), sr);
+  ok('pitch detector finds A4 within 5 cents', fA && Math.abs(1200 * Math.log2(fA / 440)) < 5, fA);
+  ok('pitch detector finds F3 without octave error', fF && Math.abs(1200 * Math.log2(fF / 174.61)) < 5, fF);
+  ok('pitch detector returns null for silence', window.pitchFromBuffer(new Float32Array(2048), sr) === null);
 
   // options / modal
   $('optToggle').dispatchEvent(evt('click'));

@@ -4,7 +4,9 @@ A sibling of **fretboard-trainer** for the **Suzuki M-37C Plus** alto melodica: 
 keyboard that looks and sounds like the real instrument, teaches exactly which keys to press for any
 **chord progression, chord, scale, note or melody**, and drills the learner toward five concrete goals.
 
-Status: **spec agreed in principle** (owner decisions folded in, see §8). Nothing is built yet.
+Status: **built through phase 3 on 2026-09-07** (keyboard + own-recorded sound, coach, chords, drills with mic, guide;
+first deploy at melodica-trainer.pages.dev; repo jermn007/melodica-trainer). See `HANDOFF.md` for the as-built
+architecture and the open items (custom domain, analytics token, device QA, GUIDE evaluate pass, self-pilot).
 
 ---
 
