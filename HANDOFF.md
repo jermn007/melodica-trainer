@@ -61,9 +61,12 @@ npm run deploy     # build, then wrangler pages deploy dist --project-name melod
   red rail on the right, exactly the instrument seen from above); text counter-rotates. Auto = held in portrait.
   SVG presentation attributes use literal hex (`COL`, `PITCH`), never CSS vars.
 - **Audio:** `ac()` builds ctx → in-gain → (dry + two LFO-modulated delays as a light chorus, wet .12) → low-pass +
-  gain = **Air** (breath: 2–8 kHz, 0.5–0.7) → master. `loadSamples()` fetches `samples/samples.json` then all 37 MP3s
-  on the first gesture. `voiceOn/voiceOff`: a looping `AudioBufferSourceNode` per held key (loopStart/End from the
-  manifest, 8 ms attack, 160 ms release) or the sawtooth **synth fallback** while loading / offline / `Sound=Simple`.
+  gain = **Air** (breath: 2–8 kHz, 0.5–0.7) → master. `loadSamples()` runs **at page load**: it fetches
+  `samples/samples.json` and all 37 MP3s and decodes them with an `OfflineAudioContext` (no gesture needed, no
+  autoplay warning); the real `AudioContext` is created on the first gesture. A key pressed while its note is still
+  decoding waits up to 250 ms for the sample (`AUD.waiters`) instead of playing the synth. `voiceOn/voiceOff`: a
+  looping `AudioBufferSourceNode` per held key (loopStart/End from the manifest, 8 ms attack, 160 ms release) or the
+  sawtooth **synth fallback** when samples are unavailable (offline, fetch failed) or `Sound=Simple`.
   `play(midi,start,dur)` is the scheduled variant used by the transport. The metronome click bypasses Air.
 - **Voicing engine:** `voicings(rootPC,qual)` enumerates every close-position inversion that fits F3–F6;
   `pickVoicing(list, prev)` chooses root position nearest the register centre (`Voicing=Root`) or the inversion with

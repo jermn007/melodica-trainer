@@ -604,7 +604,7 @@ function parseLine(text){
 
 /* ---------------- audio: sampled melodica with synth fallback ---------------- */
 let muted=false;
-const AUD={ctx:null,state:'idle',man:null,buf:{}};
+const AUD={ctx:null,state:'idle',man:null,buf:{},waiters:{}};
 function ac(){
   if(!AUD.ctx){
     const c=new (window.AudioContext||window.webkitAudioContext)(); AUD.ctx=c;
@@ -620,15 +620,21 @@ function ac(){
   return AUD.ctx;
 }
 function setAir(a){ S.air=a; if(!AUD.ctx) return; AUD.lp.frequency.value=2000+6000*a; AUD.airG.gain.value=0.5+0.2*a; }
+/* Samples are fetched and decoded at page load (an OfflineAudioContext decodes without a user gesture, so the
+   first tap already has the real sound). A key pressed while a note is still decoding waits for it (up to 250 ms)
+   rather than falling back to the synth. */
+function notifyWaiters(m){ const w=AUD.waiters[m]; if(w){ delete AUD.waiters[m]; w.forEach(fn=>fn()); } }
 async function loadSamples(){
   if(AUD.state!=='idle') return; AUD.state='loading'; updateSoundPill();
   try{
     const r=await fetch('samples/samples.json'); if(!r.ok) throw new Error('no manifest');
-    AUD.man=await r.json(); const c=ac();
-    await Promise.all(Object.entries(AUD.man.notes).map(async ([m,n])=>{ const rr=await fetch('samples/'+n.file); if(!rr.ok) throw new Error(n.file); AUD.buf[m]=await c.decodeAudioData(await rr.arrayBuffer()); }));
+    AUD.man=await r.json();
+    const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    const dec=OAC?new OAC(1,1,AUD.man.sampleRate||44100):ac();
+    await Promise.all(Object.entries(AUD.man.notes).map(async ([m,n])=>{ const rr=await fetch('samples/'+n.file); if(!rr.ok) throw new Error(n.file); AUD.buf[m]=await dec.decodeAudioData(await rr.arrayBuffer()); notifyWaiters(m); }));
     AUD.state='ready';
   }catch(e){ AUD.state='failed'; }
-  updateSoundPill();
+  updateSoundPill(); Object.keys(AUD.waiters).forEach(notifyWaiters);
 }
 const voices={};
 function voiceOn(midi,t,vel){
@@ -645,8 +651,15 @@ function voiceOn(midi,t,vel){
   return {src:[o1,o2],g,lv};
 }
 function voiceOff(v,t){ const R=0.16; v.g.gain.cancelScheduledValues(t); v.g.gain.setValueAtTime(v.lv,t); v.g.gain.exponentialRampToValueAtTime(0.0001,t+R); v.src.forEach(s=>{ try{ s.stop(t+R+0.03); }catch(e){} }); }
-function noteOn(midi){ if(muted||S.sound==='off') return; if(voices[midi]) noteOff(midi); const c=ac(); voices[midi]=voiceOn(midi,c.currentTime,1); }
-function noteOff(midi){ const v=voices[midi]; if(!v) return; delete voices[midi]; voiceOff(v,AUD.ctx.currentTime); }
+function noteOn(midi){ if(muted||S.sound==='off') return; if(voices[midi]) noteOff(midi); const c=ac();
+  if(S.sound==='melodica'&&AUD.state==='loading'&&!AUD.buf[midi]){
+    /* sample still decoding: hold the note for it briefly (the key is usually released later than that) */
+    const tok={pending:true}; voices[midi]=tok; let done=false;
+    const go=()=>{ if(done) return; done=true; if(voices[midi]!==tok) return; voices[midi]=voiceOn(midi,c.currentTime,1); };
+    (AUD.waiters[midi]=AUD.waiters[midi]||[]).push(go); setTimeout(go,250); return;
+  }
+  voices[midi]=voiceOn(midi,c.currentTime,1); }
+function noteOff(midi){ const v=voices[midi]; if(!v) return; delete voices[midi]; if(v.pending) return; voiceOff(v,AUD.ctx.currentTime); }
 function play(midi,start,dur,vel){ if(muted||S.sound==='off') return; const c=ac(), t=c.currentTime+(start||0); const v=voiceOn(midi,t,vel==null?1:vel); voiceOff(v,t+(dur||0.5)); }
 function allNotesOff(){ Object.keys(voices).forEach(m=>noteOff(+m)); }
 
@@ -666,7 +679,7 @@ const IC={
 };
 const $=id=>document.getElementById(id);
 function updateSoundPill(){ const el=$('soundpill'); if(!el) return;
-  const st = S.sound==='off' ? ['','sound off'] : S.sound==='simple' ? ['','simple synth'] : AUD.state==='ready' ? ['ok','sampled melodica'] : AUD.state==='loading' ? ['','loading samples…'] : AUD.state==='failed' ? ['warn','samples unavailable · synth'] : ['','tap a key to load samples'];
+  const st = S.sound==='off' ? ['','sound off'] : S.sound==='simple' ? ['','simple synth'] : AUD.state==='ready' ? ['ok','sampled melodica'] : AUD.state==='loading' ? ['','loading samples…'] : AUD.state==='failed' ? ['warn','samples unavailable · synth'] : ['','samples not loaded'];
   el.className='pill '+st[0]; el.textContent=st[1]; }
 function updateLegend(){
   const el=$('legend'); if(!el) return;
@@ -1008,8 +1021,8 @@ helpModal.addEventListener('keydown',e=>{
     else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); } }
 });
 try{ if(!localStorage.getItem('mt_guide_seen')) openHelp(); }catch(e){}
-/* start fetching samples on the first gesture anywhere (audio itself needs a gesture too) */
-document.addEventListener('pointerdown',()=>loadSamples(),{once:true,capture:true});
+/* fetch + decode the sample set right away; the AudioContext itself is created on the first gesture */
+if(S.sound==='melodica') loadSamples();
 </script>
 </body>
 </html>
